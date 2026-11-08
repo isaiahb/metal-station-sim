@@ -8,6 +8,49 @@ without the arm.
 Everything is in the arm's model frame: x forward, y left, z up, metres, the base plate's top at z = 0, the table
 top at z = -0.008. The sim's arm is our left arm (it is called `right` inside the MuJoCo scene).
 
+## Quick start for teammates
+
+You need Python 3.12. Everything runs on a laptop CPU; no GPU, no station access.
+
+```bash
+git clone https://github.com/isaiahb/metal-station-sim.git
+cd metal-station-sim
+python3.12 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+```
+
+Start the sim station (leave it running; it serves the arm API on port 8790):
+
+```bash
+.venv/bin/python -m calib.station_sim --port 8790
+```
+
+In a second terminal, run the worked example (a wrist look, then pick a block and stack it):
+
+```bash
+.venv/bin/python -m examples.pick_and_stack --url http://127.0.0.1:8790
+```
+
+Then point your own script at the same URL. The API:
+
+| Call | What it does |
+| --- | --- |
+| `GET /state` | joints `q` (6, rad), `grip` (0 closed .. 1 open), `moving`, `goal` |
+| `GET /wrist.jpg`, `GET /overhead.jpg` | camera frames; the `X-Joints` header gives the joints at that frame |
+| `POST /move {"q": [6], "grip": g, "rate": r}` | move to joints `q` at up to `r` rad/s |
+| `POST /stop` | hold where it is |
+
+Before anything you write goes to the real arm:
+
+1. Run it here first and make sure every move passes `calib/tower_safety.py` (`check_path`, `check_pose`); the
+   larger scripts already do.
+2. The real arm stops for a person in the work area, a gate (someone else assigned the arm), or a safety refusal.
+   Plan for that: a script must never leave the arm low over a block, and its first move must be checked like
+   every other move.
+3. Keep moves on the left side of the table; the other arm shares it.
+
+Ask in the team chat before running on the real arm, so two scripts never drive it at once.
+
 ## What is here
 
 | Path | What it is |
