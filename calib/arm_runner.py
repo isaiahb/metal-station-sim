@@ -260,10 +260,11 @@ class RLoop(D.Loop):
     def stop_check(self):
         self.hooks.boundary(self)
 
-    def go(self, pl, grip, tag, direction):
+    # every override passes data_loop's own arguments through (*a, **kw): that file changes under us
+    def go(self, pl, grip, tag, *a, **kw):
         for attempt in range(4):
             try:
-                return super().go(pl, grip, tag, direction)
+                return super().go(pl, grip, tag, *a, **kw)
             except SystemExit as e:
                 if "GATE" not in str(e) or attempt == 3:
                     raise
@@ -294,10 +295,10 @@ class RLoop(D.Loop):
         new.check(skip=self.cur)
         return new
 
-    def to_pose(self, tip, tag, v=0.4):
+    def to_pose(self, tip, tag, *a, **kw):
         for attempt in range(4):
             try:
-                return super().to_pose(tip, tag, v)
+                return super().to_pose(tip, tag, *a, **kw)
             except SystemExit as e:
                 if "GATE" not in str(e) or attempt == 3:
                     raise
@@ -306,33 +307,33 @@ class RLoop(D.Loop):
                 self.op.st["target"] = None
                 self.recov["gate resume"] += 1
 
-    def grip_to(self, s, g, wait_close=False):
+    def grip_to(self, s, g, *a, **kw):
         self.hooks.wait_gate()
-        return super().grip_to(s, g, wait_close)
+        return super().grip_to(s, g, *a, **kw)
 
-    def look(self, tag, tip=LOOK_TIP):
-        bel, stem = super().look(tag, tip)
+    def look(self, tag, *a, **kw):
+        bel, stem = super().look(tag, *a, **kw)
         self.pics.append(str(self.op.run / f"{stem}-ov.jpg"))
         if bel is not None:
             self.hooks.world(self)
         return bel, stem
 
-    def check_place(self, colour, target, level):
-        fit, stem = super().check_place(colour, target, level)
+    def check_place(self, colour, *a, **kw):
+        fit, stem = super().check_place(colour, *a, **kw)
         ov = self.op.run / f"{stem}-ov.jpg"
         self.pics.append(str(ov))
         self.hooks.picture(ov)
         return fit, stem
 
-    def pick_spot(self, colour, levels, avoid=()):
+    def pick_spot(self, colour, levels, *a, **kw):
         self._levels = levels
-        return super().pick_spot(colour, levels, avoid)
+        return super().pick_spot(colour, levels, *a, **kw)
 
-    def feasible(self, colour, target):
+    def feasible(self, colour, target, *a, **kw):
         """data_loop's check (pick from where it is, place at the spot, the check photo), plus: the block can be picked
         again from the spot, at every level it may end up at there. Without this the loop set blocks where no pick pose
         solves (x 40 cm, y 16 cm, yaw 37 deg in the sim) and every later cycle failed on them."""
-        if not super().feasible(colour, target):
+        if not super().feasible(colour, target, *a, **kw):
             return False
         tx, ty, tyaw = target[:3]
         saved = self.belief[colour]
@@ -348,9 +349,9 @@ class RLoop(D.Loop):
         finally:
             self.belief[colour] = saved
 
-    def release(self, s):
+    def release(self, s, *a, **kw):
         self.hooks.wait_gate()
-        return super().release(s)
+        return super().release(s, *a, **kw)
 
     def block(self, colour, target, cycle, k, phase, recovery=False, **kw):
         prev, self.cur = self.cur, colour

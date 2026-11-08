@@ -97,11 +97,16 @@ class Station:
         props, kw = setup(self.seed, self.mode)
         rng = np.random.default_rng(self.seed + 77)
         # blocks where the station's are: inside the look's view (x 26-40 cm, y -8..18 cm), 11 cm apart
-        pts = []
+        pts, misses = [], 0
         while len(pts) < 3:
             p = np.array([rng.uniform(0.26, 0.36), rng.uniform(-0.06, 0.16)])
             if all(np.linalg.norm(p - q) > 0.11 for q in pts):
                 pts.append(p)
+                misses = 0
+            else:
+                misses += 1
+                if misses > 200:  # the first two left no room for a third (seed 1 looped forever): start over
+                    pts, misses = [], 0
         for p, xy in zip(props, pts):  # where data_loop's plans solve (a block at x 40 cm, yaw -31 deg had no pick pose)
             p["at"] = [float(xy[0]), float(xy[1])]
             p["yaw"] = float(rng.uniform(-0.35, 0.35))

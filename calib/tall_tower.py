@@ -239,7 +239,7 @@ class Tall(D.Loop):
                 for pt in corners:
                     d = pt - [b["x"], b["y"]]
                     u, v = d[0] * cb + d[1] * sb, -d[0] * sb + d[1] * cb
-                    if abs(u) < hu + 0.003 and abs(v) < hv + 0.003:
+                    if abs(u) < hu + 0.002 and abs(v) < hv + 0.002:
                         hits.append(c)
                         break
         # sticks and balls lie up to 43 mm high: no pad within 5 mm of one of their points while that low
@@ -435,9 +435,15 @@ class Tall(D.Loop):
                 cands.append((x, y, yaw))
                 if len(cands) >= 40:
                     break
-            if cands:  # the reach is highest near x 18-22, y -5..10
-                x, y, yaw = min(cands, key=lambda c: math.hypot(c[0] - 0.20, c[1] - 0.025))
-                best = (x, y, yaw, [])
+            # the reach is highest near x 18-22, y -5..10: nearest that first; 9 cm from a tall stack (the camera
+            # passes over it), and the first block's whole move must plan
+            first = (list(tower) + list(parked))[0]
+            for x, y, yaw in sorted(cands, key=lambda c: math.hypot(c[0] - 0.20, c[1] - 0.025)):
+                if any(top_of(b) > TABLE_Z + 0.05 and math.hypot(b["x"] - x, b["y"] - y) < 0.09 for k, b in self.belief.items() if k != first):
+                    continue
+                if self.feasible(first, (x, y, yaw, 0, None)):
+                    best = (x, y, yaw, [])
+                    break
             if best is None:
                 raise D.Fatal(f"no new tower spot near x 18-22 cm: {dict(self.why)}")
             x, y, yaw, got = best
@@ -447,7 +453,13 @@ class Tall(D.Loop):
             park = []
             for k in reversed(tower):
                 wait_no_hands(self)
-                px, py, pyaw = self.pick_spot(k, [0], avoid=[(x, y)] + park)
+                try:
+                    px, py, pyaw = self.pick_spot(k, [0], avoid=[(x, y)] + park)
+                except D.NoSpot as e:
+                    D.status(f"tall tower: no parking spot for {k} ({str(e)[:200]}); re-looking it and the blocks around it")
+                    self.belief[k]["t_seen"] = 0
+                    super(Tall, self).relook(k)
+                    px, py, pyaw = self.pick_spot(k, [0], avoid=[(x, y)] + park)
                 self.block(k, (px, py, pyaw, 0, None), 1, 0, "unstack")
                 park.append((px, py))
             # rebuild in the same order at the new spot
@@ -467,6 +479,80 @@ class Tall(D.Loop):
         built = self.build_seq(pile, built)
         D.status(f"tall tower done: {len(built)} blocks ({' / '.join(built)}), top at {(top_of(self.belief[built[-1]]) - TABLE_Z) * 1000:.0f} mm over the table")
         return built
+
+    def loop_look(self, avoid):
+        """A full look; blocks by the base (x under 15 cm) and the avoided piles stay in the belief as things in the way."""
+        self.look_all("look-loop")
+        for n_, (ax, ay, atop) in enumerate(avoid):
+            self.belief = {k: b for k, b in self.belief.items() if math.hypot(b["x"] - ax, b["y"] - ay) > 0.07}
+            self.belief[f"pile#{n_}"] = {"x": ax, "y": ay, "yaw": 0.0, "level": 0, "z0": atop - H, "lying": False, "iou": 1.0, "edge": False,
+                                         "t_seen": time.time()}
+            if len(self.obstacles):
+                self.obstacles = self.obstacles[np.hypot(self.obstacles[:, 0] - ax, self.obstacles[:, 1] - ay) > 0.06]
+        self.put_blocks()
+        free = [k for k, b in self.belief.items() if not k.startswith("pile") and b["x"] >= 0.15 and abs(bot(b) - TABLE_Z) < 0.005]
+        D.status("stack loop look: " + ", ".join(f"{k} ({b['x'] * 100:.1f}, {b['y'] * 100:.1f}){' side' if b.get('lying') else ''}"
+                                                for k, b in self.belief.items()) + f"; free {free}")
+        return free
+
+    def stack_loop(self, avoid, cycles=1000):
+        """Never exits on a block it cannot find or place: re-looks and goes on with another block or spot."""
+        import collections
+        t_report = time.time()
+        fails = 0
+        for n in range(1, cycles + 1):
+            D.Loop.stop_check(self)
+            try:
+                free = self.loop_look(avoid)
+                if len(free) < 2:
+                    D.status("stack loop: fewer than 2 free blocks; looking again in 20 s")
+                    time.sleep(20)
+                    continue
+                k = int(self.rng.integers(2, 4)) if len(free) >= 3 else 2
+                order = [str(c) for c in self.rng.permutation(free)][:k]
+                self.cyc = {"tower_order": order, "fallbacks": [], "cycle": n}
+                self.why = collections.Counter()
+                base = order[0]
+                x, y, yaw = self.pick_spot(base, list(range(k)), avoid=[(a[0], a[1]) for a in avoid])
+                built = []
+                for bid in order:
+                    wait_no_hands(self)
+                    if built:
+                        s_ = self.belief[built[-1]]
+                        tgt = (s_["x"], s_["y"], s_["yaw"], len(built), built[-1])
+                    else:
+                        tgt = (x, y, yaw, 0, None)
+                    try:
+                        self.block(bid, tgt, n, len(built) + 1, "stack")
+                        built.append(bid)
+                    except (D.NoPlan, D.NoSpot) as e:
+                        D.status(f"stack loop: {bid} skipped ({str(e)[:200]})")
+                        self.op.st["target"] = None
+                D.status(f"stack loop cycle {n}: built {len(built)} high ({' / '.join(built)}) at ({x * 100:.1f}, {y * 100:.1f})")
+                # unstack top-down to random spots
+                for j, bid in enumerate(reversed(built)):
+                    wait_no_hands(self)
+                    try:
+                        px, py, pyaw = self.pick_spot(bid, [0], avoid=[(a[0], a[1]) for a in avoid])
+                        self.block(bid, (px, py, pyaw, 0, None), n, len(built) + j + 1, "unstack")
+                    except (D.NoPlan, D.NoSpot) as e:
+                        D.status(f"stack loop: unstacking {bid} skipped ({str(e)[:200]}); re-looking")
+                        self.op.st["target"] = None
+                        break
+                fails = 0
+            except D.CycleFail as e:
+                fails += 1
+                st = arm_state()
+                if st["grip"] < 0.75 and st["goal_grip"] < 0.75:
+                    raise D.Fatal(f"stopped holding a block: {e}")
+                D.status(f"stack loop cycle {n}: {type(e).__name__}: {str(e)[:300]}; re-looking")
+                self.op.st["target"] = None
+                if fails >= 6:
+                    time.sleep(30)
+            if time.time() - t_report > 600:
+                t_report = time.time()
+                D.status(f"stack loop counts: {self.counts}, blocks {len(self.block_times)}, "
+                         f"mean {np.mean(self.block_times) if self.block_times else 0:.1f} s per block")
 
     def build_seq(self, order, base):
         """Strictly in this order (a pile comes off top first), each onto the tower's top; stops at the first failure."""
@@ -540,16 +626,16 @@ class Tall(D.Loop):
 
 
 def hands_px(bgr):
-    """Skin-coloured pixels along the wrist frame's bottom edge (where a hand reaching in shows), saturated orange
-    and red foam left out."""
+    """Skin-coloured pixels (hue under 25 or over 170, saturation 35-110: the red sticks are more saturated) along the
+    wrist frame's bottom fifth, where a hand reaching for the arm shows. A hand read 6100, the station's own
+    clutter 3300-4200 (Nov 7 frames)."""
     h = bgr.shape[0]
-    w = bgr.shape[1]
-    hsv = cv2.cvtColor(bgr[int(h * 0.45):int(h * 0.80), int(w * 0.05):int(w * 0.95)], cv2.COLOR_BGR2HSV)
-    skin = ((hsv[..., 0] < 25) | (hsv[..., 0] > 170)) & (hsv[..., 1] > 35) & (hsv[..., 1] < 150) & (hsv[..., 2] > 70)
+    hsv = cv2.cvtColor(bgr[int(h * 0.80):], cv2.COLOR_BGR2HSV)
+    skin = ((hsv[..., 0] < 25) | (hsv[..., 0] > 170)) & (hsv[..., 1] > 35) & (hsv[..., 1] < 110) & (hsv[..., 2] > 70)
     return int(skin.sum())
 
 
-def wait_no_hands(t, limit=2500, timeout=300):
+def wait_no_hands(t, limit=5000, timeout=300):
     t0 = time.time()
     while True:
         data, _, _ = O.fetch("wrist")
@@ -647,6 +733,27 @@ def main():
             D.status(f"tall tower done: {len(built)} blocks ({' / '.join(built)}), top at {(top_of(t.belief[built[-1]]) - TABLE_Z) * 1000:.0f} mm over the table")
         except BaseException as e:  # noqa: BLE001
             D.status(f"tall tower stopped: {type(e).__name__}: {e}")
+            st = arm_state()
+            clean = st["grip"] > 0.75 and not st.get("grip_holding")
+        finally:
+            finish(t, clean)
+        return
+    if cmd == "loop":  # loop [--avoid X,Y[,TOP]] ...: stack 2-3 high at random spots, unstack to random spots, again
+        avoid = []
+        for k_, a in enumerate(sys.argv):
+            if a == "--avoid":
+                v = [float(u) for u in sys.argv[k_ + 1].split(",")]
+                avoid.append((v[0], v[1], v[2] if len(v) > 2 else 0.11))
+        D.take_token()
+        t = Tall(session)
+        t.op.st["target"] = None
+        D.status(f"stack loop session {session.name}: token taken")
+        D.rec("/start")
+        clean = True
+        try:
+            t.stack_loop(avoid)
+        except BaseException as e:  # noqa: BLE001
+            D.status(f"stack loop stopped: {type(e).__name__}: {e}")
             st = arm_state()
             clean = st["grip"] > 0.75 and not st.get("grip_holding")
         finally:
