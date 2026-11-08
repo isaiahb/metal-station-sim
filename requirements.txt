@@ -1,0 +1,5 @@
+# Python 3.12 (tested on 3.12.13). These are the versions the sim was tested with.
+mujoco==4.0.0
+numpy==2.2.6
+scipy==1.18.1
+opencv-python-headless==5.0.0.93

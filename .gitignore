@@ -1,0 +1,6 @@
+runs/
+__pycache__/
+*.pyc
+MUJOCO_LOG.TXT
+.venv/
+.env

@@ -1,0 +1,44 @@
+{
+ "what": "measured minus commanded joints = -alpha * gravity torque / kp (sim Metal arm, kp from sim/servo_fit.json); fitted by calib/tower_plan.py --fit-sag on the touch run's loaded poses",
+ "alpha": [
+  0.0,
+  1.028,
+  1.002,
+  0.315,
+  0.0,
+  0.0
+ ],
+ "poses": [
+  "blue-touch.json",
+  "green-touch.json",
+  "pose-base.json",
+  "pose-elbow+0.20.json",
+  "pose-elbow-0.20.json",
+  "pose-lift+0.15.json",
+  "pose-lift-0.15.json"
+ ],
+ "rms_rad_before": [
+  0.0046,
+  0.0866,
+  0.045,
+  0.0087,
+  0.0005,
+  0.0024
+ ],
+ "rms_rad_after": [
+  0.0046,
+  0.0103,
+  0.0065,
+  0.0085,
+  0.0005,
+  0.0024
+ ],
+ "max_rad_after": [
+  0.0062,
+  0.0146,
+  0.0101,
+  0.0144,
+  0.0006,
+  0.0043
+ ]
+}

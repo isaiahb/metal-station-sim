@@ -1,0 +1,204 @@
+{
+ "arm": "left",
+ "dq_rad": [
+  0.0,
+  0.0761488046953585,
+  0.01795310520395142,
+  -0.1202157004003196,
+  -0.0200280769617274,
+  0.0
+ ],
+ "dq_deg": [
+  0.0,
+  4.36,
+  1.03,
+  -6.89,
+  -1.15,
+  0.0
+ ],
+ "camera": {
+  "width": 1280,
+  "height": 720,
+  "rvec": [
+   1.8988183338249773,
+   -1.4417631801010318,
+   0.8560074064848725
+  ],
+  "tvec": [
+   -0.41522291631050345,
+   0.3850140153538027,
+   0.397991994582482
+  ],
+  "f": 576.7394095957834,
+  "k1": -0.1076869218771116,
+  "K": [
+   [
+    576.7394095957834,
+    0,
+    640.0
+   ],
+   [
+    0,
+    576.7394095957834,
+    360.0
+   ],
+   [
+    0,
+    0,
+    1
+   ]
+  ],
+  "pos": [
+   -0.0043,
+   -0.345,
+   0.6
+  ],
+  "fovy_deg": 63.94471464801937,
+  "R_cols_xyz": [
+   [
+    0.2023695880353279,
+    0.5835507475424124,
+    -0.7864572937427078
+   ],
+   [
+    -0.9698439232285894,
+    0.2308071758193747,
+    -0.07829950297966487
+   ],
+   [
+    0.13582825337532012,
+    0.7785862653765323,
+    0.6126614994856734
+   ]
+  ],
+  "pitch_down_deg": 37.782196503077586,
+  "yaw_deg": 5.685618155137296,
+  "position": "pinned at the MakerMods station drawing's lens (calib/fit_overhead.MOUNT)"
+ },
+ "median_px": {
+  "fit": 13.219279475372794,
+  "held_out_before": 19.18010119537087,
+  "held_out_camera_only": 14.532095068946829,
+  "held_out_after": 12.581907615599075
+ },
+ "frames": {
+  "fit": 105,
+  "held_out": 29
+ },
+ "fitted_with": "calib/fit_arm.py",
+ "status": "Adopted Nov 7 (Isaiah): offsets from the wrist-camera tag-cube fit (calib/fit_tagcubes.py, 17 views, 284 corners, 26.3 -> 2.4 px). Pan and wrist_roll are not observable from the wrist alone and stay 0. 1-sigma: lift 0.37, elbow 0.37, wrist_flex 0.27, wrist_yaw 0.10 deg (lift/elbow correlation -0.88). The overhead camera disagrees with this chain about where the cubes are (about 13 cm); that is set aside. Convention: model joints = measured joints + dq_rad.",
+ "sag_rad_meas_minus_cmd": {
+  "green_touch": [
+   -0.006,
+   -0.064,
+   -0.04,
+   -0.016,
+   0.001,
+   -0.004
+  ],
+  "blue_touch": [
+   -0.006,
+   -0.086,
+   -0.042,
+   -0.015,
+   0.001,
+   -0.002
+  ]
+ },
+ "tagcube_fit_nov7": {
+  "dq_deg_lift_elbow_flex": {
+   "lift": [
+    3.01,
+    0.5
+   ],
+   "elbow": [
+    1.62,
+    0.49
+   ],
+   "wrist_flex": [
+    -7.52,
+    0.38
+   ]
+  },
+  "dq_rad_wrist_chain": [
+   0.0,
+   0.052507595745133626,
+   0.028195515968396905,
+   -0.13131066254672522,
+   0.0,
+   0.0
+  ],
+  "corr_lift_elbow_flex": [
+   [
+    1.0000000000000002,
+    -0.8633789069492523,
+    0.6492024503638565
+   ],
+   [
+    -0.8633789069492608,
+    1.0,
+    -0.893652906092949
+   ],
+   [
+    0.6492024503638705,
+    -0.8936529060929541,
+    1.0
+   ]
+  ],
+  "px": {
+   "wrist_before": 26.257985449206288,
+   "overhead_before": 11.596401641292415,
+   "wrist_after": 4.602861050350818,
+   "overhead_after": 11.815844041147418,
+   "wrist_corners": 284,
+   "overhead_corners": 220
+  },
+  "variants_deg": {
+   "overhead pinned, aim free": [
+    1.75,
+    3.38,
+    -9.14
+   ],
+   "overhead aim and position free": [
+    3.01,
+    1.62,
+    -7.52
+   ],
+   "all six joints free (pan, roll unobservable)": [
+    4.36,
+    1.03,
+    -6.89
+   ],
+   "overhead fully pinned": "inconsistent: wrist 50.8 px"
+  },
+  "status": "NOT adopted (dq_rad stays zeros): the wrist chain is self-consistent (26 -> 4.6 px with these offsets) but puts the BIG70 cube at x 261 y 383 mm where the overhead says x 199 y 272 mm (B39: 105, 295 vs 44, 175): a ~13 cm shift. Resolve that (tape-measure the cubes from the left base, or views of a cube in the overhead's centre) before adopting.",
+  "data": "runs/station/calib4 views 00-16, fit outputs in runs/station/calib4/fit"
+ },
+ "dq_fit_overhead_rad": [
+  -0.06370439700307419,
+  0.17399144330267446,
+  -0.13120393719016976,
+  -0.01110279086145664,
+  -0.06233671393514198,
+  0.03731487651838704
+ ],
+ "evidence": {
+  "fit": "runs/station/calib4/fit/fit17_dq0_1_2_3_4_5freepos.json",
+  "px": {
+   "wrist_before": 26.257985449206288,
+   "overhead_before": 11.596401641292415,
+   "wrist_after": 2.3656361657035343,
+   "overhead_after": 11.890331774077113,
+   "wrist_corners": 284,
+   "overhead_corners": 220
+  },
+  "dq_sd_rad": {
+   "pan": 0.2878021643617351,
+   "lift": 0.0064886833466471575,
+   "elbow": 0.006431287134141532,
+   "wrist_flex": 0.0047532440267782665,
+   "wrist_yaw": 0.0018032920449380422,
+   "wrist_roll": 0.2878021643609316
+  }
+ }
+}

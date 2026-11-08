@@ -1,0 +1,42 @@
+{
+ "camera": "wrist_l",
+ "frame": "the sim Metal arm's right_tcp site (tool point); camera axes x right, y down, z forward",
+ "rvec_in_tcp": [
+  -0.048945088251224754,
+  -0.5403224069248158,
+  3.051512276167466
+ ],
+ "pos_in_tcp": [
+  0.0024376959970644177,
+  0.07645564549660355,
+  -0.0843303811931885
+ ],
+ "R_in_tcp": [
+  [
+   -0.9986100473936332,
+   -0.036058412347171824,
+   -0.03844169797871709
+  ],
+  [
+   0.0470657599101248,
+   -0.9383515660942154,
+   -0.3424633595767811
+  ],
+  [
+   -0.023723142468232667,
+   -0.34379663946515604,
+   0.9387444184675067
+  ]
+ ],
+ "f": 462.24833110077,
+ "k1": 0.04094360008663861,
+ "k2": -0.03954771323507226,
+ "width": 1280,
+ "height": 720,
+ "principal_point": "image centre",
+ "model": "u = f * x * (1 + k1 r^2 + k2 r^4) + 640, v likewise with 360; x, y = X/Z, Y/Z in the camera frame",
+ "use_with": "calib/arm_left.json dq_rad (model joints = measured joints + dq_rad)",
+ "reprojection_px": 2.3656361657035343,
+ "corners": 284,
+ "fitted_with": "calib/fit_tagcubes.py --dq 0,1,2,3,4,5 --free-pos on runs/station/calib4 views 00-16 (BIG70 and B39 tag cubes)"
+}

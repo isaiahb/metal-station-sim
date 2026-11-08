@@ -1,0 +1,129 @@
+{
+  "_about": "What the sim knows about the hackathon station and objects. Every value says where it came from; 'guess' values are replaced as they are measured (Nov 7).",
+  "station": {
+    "base_spacing_m": {
+      "value": 0.69,
+      "source": "MakerMods Metal Arm Station drawing (makermods.ai/scripts/station-fixture.js)"
+    },
+    "block_forward_m": {
+      "value": 0.3,
+      "source": "guess"
+    },
+    "block_left_of_right_base_m": {
+      "value": 0.305,
+      "source": "guess: midway between the bases"
+    },
+    "overhead_cam_height_m": {
+      "value": 0.6,
+      "source": "MakerMods Metal Arm Station drawing (makermods.ai/scripts/station-fixture.js): lens centre over the plate top; the CAD-onto-arm fit (calib/cam_mid.json) puts it at 0.552"
+    },
+    "overhead_cam_behind_bases_m": {
+      "value": 0.05,
+      "source": "guess"
+    },
+    "base_on_riser_m": {
+      "value": 0.0,
+      "source": "guess: bases straight on the table"
+    },
+    "overhead_cam_pitch_deg": {
+      "value": 30.0,
+      "source": "MakerMods Metal Arm Station drawing (makermods.ai/scripts/station-fixture.js); the fit says 44.7"
+    },
+    "base_plate_m": {
+      "value": [
+        0.112,
+        0.89,
+        0.008
+      ],
+      "source": "MakerMods Metal Arm Station drawing (makermods.ai/scripts/station-fixture.js): flush on the flat table, both bases on it"
+    }
+  },
+  "gripper": {
+    "open_gap_m": {
+      "value": 0.1,
+      "source": "Dream robots/metal.py GRIP_SCALE_MM"
+    },
+    "closed_gap_m": {
+      "value": 0.0,
+      "source": "guess"
+    },
+    "pad_width_m": {
+      "value": 0.026,
+      "source": "sim/pick Maker pads"
+    },
+    "pad_length_m": {
+      "value": 0.064,
+      "source": "sim/pick Maker pads"
+    },
+    "pad_kind": {
+      "value": "rigid",
+      "source": "guess: stock fingers, not the compliant swap"
+    }
+  },
+  "block": {
+    "x_m": {
+      "value": 0.0507,
+      "source": "caliper"
+    },
+    "y_m": {
+      "value": 0.0499,
+      "source": "caliper"
+    },
+    "h_m": {
+      "value": 0.0345,
+      "source": "caliper"
+    },
+    "hole_d_m": {
+      "value": 0.0231,
+      "source": "caliper"
+    },
+    "hole_offset_x_m": {
+      "value": 0.0,
+      "source": "guess: centred"
+    },
+    "hole_offset_y_m": {
+      "value": 0.0,
+      "source": "guess: centred"
+    },
+    "mass_kg": {
+      "value": 0.008,
+      "source": "guess: EVA foam about 0.1 g/cm3"
+    },
+    "squeeze_mm_at_firm_grip": {
+      "value": null,
+      "source": "not measured"
+    }
+  },
+  "peg": {
+    "d_m": {
+      "value": 0.02265,
+      "source": "caliper"
+    },
+    "length_m": {
+      "value": 0.1005,
+      "source": "caliper"
+    },
+    "mass_kg": {
+      "value": 0.004,
+      "source": "guess: EVA foam about 0.1 g/cm3"
+    },
+    "squeeze_mm_at_firm_grip": {
+      "value": null,
+      "source": "not measured"
+    }
+  },
+  "fit": {
+    "block_lifts_with_peg": {
+      "value": null,
+      "source": "not measured (sim: no)"
+    },
+    "peg_falls_out_upside_down": {
+      "value": null,
+      "source": "not measured (sim: yes)"
+    },
+    "peg_above_block_m": {
+      "value": 0.066,
+      "source": "expected from lengths"
+    }
+  }
+}
