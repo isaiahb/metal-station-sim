@@ -169,7 +169,7 @@ and sets it flat on the green one, then looks again to check. It uses only `cali
 .venv/bin/python -m examples.pick_and_stack --url http://127.0.0.1:8790
 ```
 
-Output (seed 1, about 5 s at speed 4):
+Output (seed 1, about 5 s at speed 4; the mm figures change a little from run to run with the image noise):
 
 ```
 arm server: http://127.0.0.1:8790 (sim)
